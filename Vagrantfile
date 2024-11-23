@@ -3,10 +3,15 @@ Vagrant.configure("2") do |config|
 
   # Common configurations for all machines
   config.vm.provision "shell", inline: <<-SHELL
-    # Fix DNS resolution
+    # Use systemd-resolved for DNS
+    sudo systemctl stop systemd-resolved
+    sudo systemctl disable systemd-resolved
+    sudo rm -f /etc/resolv.conf
     echo "nameserver 8.8.8.8" | sudo tee /etc/resolv.conf > /dev/null
     echo "nameserver 8.8.4.4" | sudo tee -a /etc/resolv.conf > /dev/null
-	
+
+    # Restart network (handled by systemd)
+    sudo systemctl restart systemd-networkd || echo "systemd-networkd not running"
   SHELL
 
   # Master node
